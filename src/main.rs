@@ -1,4 +1,4 @@
-use std::{borrow::Borrow, fmt::Display};
+use std::fmt::Display;
 
 use oorandom;
 
@@ -9,6 +9,20 @@ struct State<'a> {
 impl<'a> Default for State<'a> {
     fn default() -> Self {
         Self { dices: vec![] }
+    }
+}
+
+impl<'a> Display for State<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.dices.len() == 0 {
+            writeln!(f, "No dices configured!")?;
+        } else {
+            writeln!(f, "Outputting all currently configured dices.")?;
+            for dice in self.dices.iter() {
+                write!(f, "{}", dice)?;
+            }
+        }
+        std::fmt::Result::Ok(())
     }
 }
 
@@ -60,8 +74,11 @@ impl<'a> Symbol<'a> {
     CONST_SYMBOL!(FIVE, "Five", 5);
     CONST_SYMBOL!(SIX, "Six", 6);
     CONST_SYMBOL!(SEVEN, "Seven", 7);
+    CONST_SYMBOL!(EIGHT, "Eight", 8);
+    CONST_SYMBOL!(NINE, "Nine", 9);
+    CONST_SYMBOL!(TEN, "Ten", 10);
 
-    const COLLECTION: [Symbol<'a>; 8] = [
+    const COLLECTION: [Symbol<'a>; 11] = [
         Symbol::ZERO,
         Symbol::ONE,
         Symbol::TWO,
@@ -70,6 +87,9 @@ impl<'a> Symbol<'a> {
         Symbol::FIVE,
         Symbol::SIX,
         Symbol::SEVEN,
+        Symbol::EIGHT,
+        Symbol::NINE,
+        Symbol::TEN,
     ];
 }
 
@@ -77,6 +97,10 @@ impl<'a> Display for Symbol<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "Symbol: {}, Number: {}", self.name, self.number)
     }
+}
+
+macro_rules! configure_dice {
+    () => {};
 }
 
 fn main() {
@@ -93,6 +117,6 @@ fn main() {
                 .clone(),
         );
     }
-    println!("{}", d6);
     state.dices.push(d6);
+    println!("{}", state);
 }
