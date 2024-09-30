@@ -1,0 +1,7 @@
+[package]
+name = "wuerfel"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+oorandom = "11.1.4"
