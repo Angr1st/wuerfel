@@ -6,6 +6,12 @@ struct State<'a> {
     dices: Vec<Dice<'a>>,
 }
 
+impl<'a> State<'a> {
+    fn add_dice(&mut self, dice: Dice<'a>) {
+        self.dices.push(dice);
+    }
+}
+
 impl<'a> Default for State<'a> {
     fn default() -> Self {
         Self { dices: vec![] }
@@ -99,17 +105,10 @@ impl<'a> Display for Symbol<'a> {
     }
 }
 
-macro_rules! configure_dice {
-    () => {};
-}
-
-fn main() {
-    let mut state = State::default();
-    let mut d6 = Dice::new("D6".to_string());
-
-    for i in 1..7 {
+fn configure_dice(dice: &mut Dice<'_>, range: std::ops::Range<usize>) {
+    for i in range {
         let j = i - 1;
-        d6.values.insert(
+        dice.values.insert(
             j,
             Symbol::COLLECTION
                 .get(i)
@@ -117,6 +116,17 @@ fn main() {
                 .clone(),
         );
     }
-    state.dices.push(d6);
+}
+
+fn main() {
+    let mut state = State::default();
+
+    let mut d6 = Dice::new("D6".to_string());
+    configure_dice(&mut d6, 1..7);
+    state.add_dice(d6);
+
+    let mut d4 = Dice::new("D4".to_string());
+    configure_dice(&mut d4, 1..5);
+    state.add_dice(d4);
     println!("{}", state);
 }
