@@ -3,12 +3,22 @@ use std::{borrow::Borrow, fmt::Display};
 use oorandom;
 
 struct State<'a> {
+    dices: Vec<Dice<'a>>,
+}
+
+impl<'a> Default for State<'a> {
+    fn default() -> Self {
+        Self { dices: vec![] }
+    }
+}
+
+struct Dice<'a> {
     name: String,
     values: Vec<Symbol<'a>>,
 }
 
-impl<'a> State<'a> {
-    fn new(name: String) -> State<'a> {
+impl<'a> Dice<'a> {
+    fn new(name: String) -> Dice<'a> {
         Self {
             name,
             values: vec![],
@@ -16,7 +26,7 @@ impl<'a> State<'a> {
     }
 }
 
-impl<'a> Display for State<'a> {
+impl<'a> Display for Dice<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "Name: {}", self.name)?;
         for symbol in self.values.iter() {
@@ -32,37 +42,26 @@ struct Symbol<'a> {
     number: usize,
 }
 
-impl<'a> Symbol<'a> {
-    const ZERO: Self = Self {
-        name: "Zero",
-        number: 0,
+macro_rules! CONST_SYMBOL {
+    ($symbol: ident, $name:literal, $number:literal ) => {
+        const $symbol: Self = Self {
+            name: $name,
+            number: $number,
+        };
     };
-    const ONE: Self = Self {
-        name: "One",
-        number: 1,
-    };
-    const TWO: Self = Self {
-        name: "Two",
-        number: 2,
-    };
-    const THREE: Self = Self {
-        name: "Three",
-        number: 3,
-    };
-    const FOUR: Self = Self {
-        name: "Four",
-        number: 4,
-    };
-    const FIVE: Self = Self {
-        name: "Five",
-        number: 5,
-    };
-    const SIX: Self = Self {
-        name: "Six",
-        number: 6,
-    };
+}
 
-    const COLLECTION: [Symbol<'a>; 7] = [
+impl<'a> Symbol<'a> {
+    CONST_SYMBOL!(ZERO, "Zero", 0);
+    CONST_SYMBOL!(ONE, "One", 1);
+    CONST_SYMBOL!(TWO, "Two", 2);
+    CONST_SYMBOL!(THREE, "Three", 3);
+    CONST_SYMBOL!(FOUR, "Four", 4);
+    CONST_SYMBOL!(FIVE, "Five", 5);
+    CONST_SYMBOL!(SIX, "Six", 6);
+    CONST_SYMBOL!(SEVEN, "Seven", 7);
+
+    const COLLECTION: [Symbol<'a>; 8] = [
         Symbol::ZERO,
         Symbol::ONE,
         Symbol::TWO,
@@ -70,6 +69,7 @@ impl<'a> Symbol<'a> {
         Symbol::FOUR,
         Symbol::FIVE,
         Symbol::SIX,
+        Symbol::SEVEN,
     ];
 }
 
@@ -80,11 +80,12 @@ impl<'a> Display for Symbol<'a> {
 }
 
 fn main() {
-    let mut state = State::new("D6".to_string());
+    let mut state = State::default();
+    let mut d6 = Dice::new("D6".to_string());
 
     for i in 1..7 {
         let j = i - 1;
-        state.values.insert(
+        d6.values.insert(
             j,
             Symbol::COLLECTION
                 .get(i)
@@ -92,5 +93,6 @@ fn main() {
                 .clone(),
         );
     }
-    println!("{}", state);
+    println!("{}", d6);
+    state.dices.push(d6);
 }
