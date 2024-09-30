@@ -1,30 +1,34 @@
-use std::fmt::Display;
+use std::{
+    fmt::Display,
+    fs::read_to_string,
+    io::{BufRead, Result},
+};
 
 use oorandom;
 
 struct State<'a> {
-    dices: Vec<Dice<'a>>,
+    dice: Vec<Die<'a>>,
 }
 
 impl<'a> State<'a> {
-    fn add_dice(&mut self, dice: Dice<'a>) {
-        self.dices.push(dice);
+    fn add_die(&mut self, dice: Die<'a>) {
+        self.dice.push(dice);
     }
 }
 
 impl<'a> Default for State<'a> {
     fn default() -> Self {
-        Self { dices: vec![] }
+        Self { dice: vec![] }
     }
 }
 
 impl<'a> Display for State<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.dices.len() == 0 {
+        if self.dice.len() == 0 {
             writeln!(f, "No dices configured!")?;
         } else {
             writeln!(f, "Outputting all currently configured dices.")?;
-            for dice in self.dices.iter() {
+            for dice in self.dice.iter() {
                 write!(f, "{}", dice)?;
             }
         }
@@ -32,13 +36,13 @@ impl<'a> Display for State<'a> {
     }
 }
 
-struct Dice<'a> {
+struct Die<'a> {
     name: String,
     values: Vec<Symbol<'a>>,
 }
 
-impl<'a> Dice<'a> {
-    fn new(name: String) -> Dice<'a> {
+impl<'a> Die<'a> {
+    fn new(name: String) -> Die<'a> {
         Self {
             name,
             values: vec![],
@@ -46,7 +50,7 @@ impl<'a> Dice<'a> {
     }
 }
 
-impl<'a> Display for Dice<'a> {
+impl<'a> Display for Die<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "Name: {}", self.name)?;
         for symbol in self.values.iter() {
@@ -125,10 +129,10 @@ impl<'a> Display for Symbol<'a> {
     }
 }
 
-fn configure_dice(dice: &mut Dice<'_>, range: std::ops::Range<usize>) {
+fn configure_die(die: &mut Die<'_>, range: std::ops::Range<usize>) {
     for i in range {
         let j = i - 1;
-        dice.values.insert(
+        die.values.insert(
             j,
             Symbol::COLLECTION
                 .get(i)
@@ -138,21 +142,50 @@ fn configure_dice(dice: &mut Dice<'_>, range: std::ops::Range<usize>) {
     }
 }
 
+fn setup_default_dice(state: &mut State) {
+    let mut d4 = Die::new("D4".to_string());
+    configure_die(&mut d4, 1..5);
+    state.add_die(d4);
+    let mut d6 = Die::new("D6".to_string());
+    configure_die(&mut d6, 1..7);
+    state.add_die(d6);
+    let mut d10 = Die::new("D10".to_string());
+    configure_die(&mut d10, 1..11);
+    state.add_die(d10);
+    let mut d20 = Die::new("D20".to_string());
+    configure_die(&mut d20, 1..21);
+    state.add_die(d20);
+}
+
 fn main() {
     let mut state = State::default();
-
-    let mut d4 = Dice::new("D4".to_string());
-    configure_dice(&mut d4, 1..5);
-    state.add_dice(d4);
-    let mut d6 = Dice::new("D6".to_string());
-    configure_dice(&mut d6, 1..7);
-    state.add_dice(d6);
-    let mut d10 = Dice::new("D10".to_string());
-    configure_dice(&mut d10, 1..11);
-    state.add_dice(d10);
-    let mut d20 = Dice::new("D20".to_string());
-    configure_dice(&mut d20, 1..21);
-    state.add_dice(d20);
-
+    setup_default_dice(&mut state);
     println!("{}", state);
+
+    //After showing the dice. Ask user to select a die by inputting name of the die
+    println!("Please enter the name of the die you want to use.");
+    let mut user_input = String::new();
+    let stdin = std::io::stdin();
+    let mut handle = stdin.lock();
+
+    let mut input_read_result = handle.read_line(&mut user_input);
+    let mut user_choice: Option<&Die<'_>> = Option::None;
+    loop {
+        if let Ok(_success) = input_read_result {
+            let trimmed = user_input.trim();
+            for die in state.dice.iter() {
+                if die.name == trimmed {
+                    user_choice = Some(die);
+                    break;
+                }
+            }
+            println!("Your input matched with none of the existing dice. Please try again!");
+            user_input.clear();
+            input_read_result = handle.read_line(&mut user_input);
+        } else {
+            println!("Failed reading from stdin!!!");
+            return;
+        }
+    }
+    println!("You selected: {}", user_choice.unwrap());
 }
