@@ -83,8 +83,18 @@ impl<'a> Symbol<'a> {
     CONST_SYMBOL!(EIGHT, "Eight", 8);
     CONST_SYMBOL!(NINE, "Nine", 9);
     CONST_SYMBOL!(TEN, "Ten", 10);
+    CONST_SYMBOL!(ELEVEN, "Eleven", 11);
+    CONST_SYMBOL!(TWELVE, "Twelve", 12);
+    CONST_SYMBOL!(THIRTEEN, "Thirteen", 13);
+    CONST_SYMBOL!(FOURTEEN, "Fourteen", 14);
+    CONST_SYMBOL!(FIVETEEN, "Fiveteen", 15);
+    CONST_SYMBOL!(SIXTEEN, "Sixteen", 16);
+    CONST_SYMBOL!(SEVENTEEN, "Seventeen", 17);
+    CONST_SYMBOL!(EIGHTEEN, "Eighteen", 18);
+    CONST_SYMBOL!(NINETEEN, "Nineteen", 19);
+    CONST_SYMBOL!(TWENTY, "Twenty", 20);
 
-    const COLLECTION: [Symbol<'a>; 11] = [
+    const COLLECTION: [Symbol<'a>; 21] = [
         Symbol::ZERO,
         Symbol::ONE,
         Symbol::TWO,
@@ -96,6 +106,16 @@ impl<'a> Symbol<'a> {
         Symbol::EIGHT,
         Symbol::NINE,
         Symbol::TEN,
+        Symbol::ELEVEN,
+        Symbol::TWELVE,
+        Symbol::THIRTEEN,
+        Symbol::FOURTEEN,
+        Symbol::FIVETEEN,
+        Symbol::SIXTEEN,
+        Symbol::SEVENTEEN,
+        Symbol::EIGHTEEN,
+        Symbol::NINETEEN,
+        Symbol::TWENTY,
     ];
 }
 
@@ -121,12 +141,18 @@ fn configure_dice(dice: &mut Dice<'_>, range: std::ops::Range<usize>) {
 fn main() {
     let mut state = State::default();
 
-    let mut d6 = Dice::new("D6".to_string());
-    configure_dice(&mut d6, 1..7);
-    state.add_dice(d6);
-
     let mut d4 = Dice::new("D4".to_string());
     configure_dice(&mut d4, 1..5);
     state.add_dice(d4);
+    let mut d6 = Dice::new("D6".to_string());
+    configure_dice(&mut d6, 1..7);
+    state.add_dice(d6);
+    let mut d10 = Dice::new("D10".to_string());
+    configure_dice(&mut d10, 1..11);
+    state.add_dice(d10);
+    let mut d20 = Dice::new("D20".to_string());
+    configure_dice(&mut d20, 1..21);
+    state.add_dice(d20);
+
     println!("{}", state);
 }
