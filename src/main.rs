@@ -1,6 +1,7 @@
 use std::{fmt::Display, io::BufRead};
 
-use oorandom;
+use getrandom::getrandom;
+use oorandom::{self, Rand32};
 
 struct State<'a> {
     dice: Vec<Die<'a>>,
@@ -58,6 +59,20 @@ impl<'a> Die<'a> {
             name,
             values: vec![],
         }
+    }
+
+    fn get_range(&self) -> std::ops::Range<u32> {
+        let first_value = self
+            .values
+            .first()
+            .expect("Die should be configured!")
+            .number as u32;
+        let second_value = self
+            .values
+            .last()
+            .expect("Die should be configured!")
+            .number as u32;
+        first_value..(second_value + 1)
     }
 }
 
@@ -204,7 +219,11 @@ fn main() {
     );
     let chosen_die = get_chosen_die(&mut state);
     println!("You selected: {}", chosen_die);
-    println!("Throwing the die!")
+    println!("Throwing the die!");
 
-    // let random_number = oorandom::Rand32::new()
+    let mut bytes: [u8; 8] = [0, 0, 0, 0, 0, 0, 0, 0];
+    getrandom(&mut bytes).expect("Should be able to get random bytes");
+    let mut random = Rand32::new(u64::from_be_bytes(bytes));
+    let random_number = random.rand_range(chosen_die.get_range());
+    println!("You rolled a: {}", random_number);
 }
