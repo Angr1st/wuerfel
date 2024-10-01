@@ -157,35 +157,46 @@ fn setup_default_dice(state: &mut State) {
     state.add_die(d20);
 }
 
-fn main() {
-    let mut state = State::default();
-    setup_default_dice(&mut state);
-    println!("{}", state);
-
+fn get_chosen_die<'a>(state: &'a mut State<'a>) -> &'a Die<'a> {
     //After showing the dice. Ask user to select a die by inputting name of the die
     println!("Please enter the name of the die you want to use.");
     let mut user_input = String::new();
     let stdin = std::io::stdin();
     let mut handle = stdin.lock();
 
-    let mut input_read_result = handle.read_line(&mut user_input);
+    handle
+        .read_line(&mut user_input)
+        .expect("Failed reading from stdin!");
     let mut user_choice: Option<&Die<'_>> = Option::None;
     loop {
-        if let Ok(_success) = input_read_result {
-            let trimmed = user_input.trim();
-            for die in state.dice.iter() {
-                if die.name == trimmed {
-                    user_choice = Some(die);
-                    break;
-                }
+        let trimmed = user_input.trim();
+        println!("User input: {}; Trimmed: {}", user_input, trimmed);
+        for die in state.dice.iter() {
+            if die.name == trimmed {
+                println!("Found die: {}", die.name);
+                user_choice = Some(die);
+                break;
             }
+        }
+        if user_choice.is_some() {
+            break;
+        } else {
             println!("Your input matched with none of the existing dice. Please try again!");
             user_input.clear();
-            input_read_result = handle.read_line(&mut user_input);
-        } else {
-            println!("Failed reading from stdin!!!");
-            return;
+            handle
+                .read_line(&mut user_input)
+                .expect("Failed reading from stdin!");
         }
     }
-    println!("You selected: {}", user_choice.unwrap());
+    let user_choice = user_choice.unwrap();
+    println!("You selected: {}", user_choice);
+    user_choice
+}
+
+fn main() {
+    let mut state = State::default();
+    setup_default_dice(&mut state);
+    println!("{}", state);
+
+    let chosen_die = get_chosen_die(&mut state);
 }
