@@ -1,7 +1,14 @@
+use std::io;
 use std::{fmt::Display, io::BufRead};
 
 use getrandom::getrandom;
 use oorandom::{self, Rand32};
+use ratatui::{
+    crossterm::event::{self, KeyCode, KeyEventKind},
+    style::Stylize,
+    widgets::Paragraph,
+    DefaultTerminal,
+};
 
 struct State<'a> {
     dice: Vec<Die<'a>>,
@@ -242,25 +249,46 @@ fn roll_again() -> bool {
     }
 }
 
-fn main() {
-    let mut state = State::default();
-    setup_default_dice(&mut state);
-
-    println!(
-        "Currently available dice: {}",
-        state.print_dice().unwrap_or(String::from("None"))
-    );
-    let chosen_die = get_chosen_die(&mut state);
-    println!("You selected: {}", chosen_die);
-    println!("Throwing the die!");
-
-    let mut random = setup_random();
-    let die_range = chosen_die.get_range();
+fn run(mut terminal: DefaultTerminal) -> io::Result<()> {
     loop {
-        let random_number = random.rand_range(die_range.clone());
-        println!("You rolled a: {}", random_number);
-        if !roll_again() {
-            break;
+        terminal.draw(|frame| {
+            let greeting = Paragraph::new("Hello Ratatui! (press 'q' to quit)")
+                .white()
+                .on_blue();
+            frame.render_widget(greeting, frame.area());
+        })?;
+
+        if let event::Event::Key(key) = event::read()? {
+            if key.kind == KeyEventKind::Press && key.code == KeyCode::Char('q') {
+                return Ok(());
+            }
         }
     }
+}
+
+fn main() -> io::Result<()> {
+    let mut state = State::default();
+    setup_default_dice(&mut state);
+    let mut terminal = ratatui::init();
+    terminal.clear()?;
+    let app_result = run(terminal);
+    ratatui::restore();
+    app_result
+    // println!(
+    //     "Currently available dice: {}",
+    //     state.print_dice().unwrap_or(String::from("None"))
+    // );
+    // let chosen_die = get_chosen_die(&mut state);
+    // println!("You selected: {}", chosen_die);
+    // println!("Throwing the die!");
+
+    // let mut random = setup_random();
+    // let die_range = chosen_die.get_range();
+    // loop {
+    //     let random_number = random.rand_range(die_range.clone());
+    //     println!("You rolled a: {}", random_number);
+    //     if !roll_again() {
+    //         break;
+    //     }
+    // }
 }
