@@ -1,8 +1,4 @@
-use std::{
-    fmt::Display,
-    fs::read_to_string,
-    io::{BufRead, Result},
-};
+use std::{fmt::Display, io::BufRead};
 
 use oorandom;
 
@@ -13,6 +9,21 @@ struct State<'a> {
 impl<'a> State<'a> {
     fn add_die(&mut self, dice: Die<'a>) {
         self.dice.push(dice);
+    }
+
+    fn print_dice(&self) -> Option<String> {
+        if self.dice.len() == 0 {
+            return None;
+        }
+        let mut buffer = String::new();
+        const SEPARATOR: &str = ", ";
+        for die in self.dice.iter() {
+            if !buffer.is_empty() {
+                buffer.push_str(SEPARATOR);
+            }
+            buffer.push_str(&die.name);
+        }
+        Some(buffer)
     }
 }
 
@@ -167,36 +178,33 @@ fn get_chosen_die<'a>(state: &'a mut State<'a>) -> &'a Die<'a> {
     handle
         .read_line(&mut user_input)
         .expect("Failed reading from stdin!");
-    let mut user_choice: Option<&Die<'_>> = Option::None;
     loop {
         let trimmed = user_input.trim();
-        println!("User input: {}; Trimmed: {}", user_input, trimmed);
         for die in state.dice.iter() {
             if die.name == trimmed {
                 println!("Found die: {}", die.name);
-                user_choice = Some(die);
-                break;
+                return die;
             }
         }
-        if user_choice.is_some() {
-            break;
-        } else {
-            println!("Your input matched with none of the existing dice. Please try again!");
-            user_input.clear();
-            handle
-                .read_line(&mut user_input)
-                .expect("Failed reading from stdin!");
-        }
+        println!("Your input matched with none of the existing dice. Please try again!");
+        user_input.clear();
+        handle
+            .read_line(&mut user_input)
+            .expect("Failed reading from stdin!");
     }
-    let user_choice = user_choice.unwrap();
-    println!("You selected: {}", user_choice);
-    user_choice
 }
 
 fn main() {
     let mut state = State::default();
     setup_default_dice(&mut state);
-    println!("{}", state);
 
+    println!(
+        "Currently available dice: {}",
+        state.print_dice().unwrap_or(String::from("None"))
+    );
     let chosen_die = get_chosen_die(&mut state);
+    println!("You selected: {}", chosen_die);
+    println!("Throwing the die!")
+
+    // let random_number = oorandom::Rand32::new()
 }
