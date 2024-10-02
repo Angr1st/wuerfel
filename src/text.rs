@@ -14,9 +14,10 @@ fn get_chosen_die<'a>(state: &'a mut State<'a>) -> &'a Die<'a> {
         .expect("Failed reading from stdin!");
     loop {
         let trimmed = user_input.trim();
-        for die in state.dice.iter() {
-            if die.name == trimmed {
-                println!("Found die: {}", die.name);
+        for die in state.get_dice().iter() {
+            let name = die.get_name();
+            if name == trimmed {
+                println!("Found die: {}", name);
                 return die;
             }
         }
