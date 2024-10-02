@@ -10,6 +10,9 @@ use ratatui::{
     DefaultTerminal,
 };
 
+mod cli;
+mod text;
+
 struct State<'a> {
     dice: Vec<Die<'a>>,
 }
@@ -190,63 +193,10 @@ fn setup_default_dice(state: &mut State) {
     state.add_die(d20);
 }
 
-fn get_chosen_die<'a>(state: &'a mut State<'a>) -> &'a Die<'a> {
-    //After showing the dice. Ask user to select a die by inputting name of the die
-    println!("Please enter the name of the die you want to use.");
-    let mut user_input = String::new();
-    let stdin = std::io::stdin();
-    let mut handle = stdin.lock();
-
-    handle
-        .read_line(&mut user_input)
-        .expect("Failed reading from stdin!");
-    loop {
-        let trimmed = user_input.trim();
-        for die in state.dice.iter() {
-            if die.name == trimmed {
-                println!("Found die: {}", die.name);
-                return die;
-            }
-        }
-        println!("Your input matched with none of the existing dice. Please try again!");
-        user_input.clear();
-        handle
-            .read_line(&mut user_input)
-            .expect("Failed reading from stdin!");
-    }
-}
-
 fn setup_random() -> Rand32 {
     let mut bytes: [u8; 8] = [0, 0, 0, 0, 0, 0, 0, 0];
     getrandom(&mut bytes).expect("Should be able to get random bytes");
     Rand32::new(u64::from_be_bytes(bytes))
-}
-
-fn roll_again() -> bool {
-    println!("Do you want to roll again?(y/n)");
-
-    let mut user_input = String::new();
-    let stdin = std::io::stdin();
-    let mut handle = stdin.lock();
-
-    handle
-        .read_line(&mut user_input)
-        .expect("Failed reading from stdin!");
-    loop {
-        let trimmed = user_input.trim();
-
-        if trimmed == "y" || trimmed == "Y" {
-            return true;
-        } else if trimmed == "n" || trimmed == "N" {
-            return false;
-        } else {
-            println!("Your input matched with none of the existing dice. Please try again!");
-            user_input.clear();
-            handle
-                .read_line(&mut user_input)
-                .expect("Failed reading from stdin!");
-        }
-    }
 }
 
 fn run(mut terminal: DefaultTerminal) -> io::Result<()> {
@@ -267,28 +217,25 @@ fn run(mut terminal: DefaultTerminal) -> io::Result<()> {
 }
 
 fn main() -> io::Result<()> {
+    let cli_options = cli::get_cli_options();
     let mut state = State::default();
     setup_default_dice(&mut state);
-    let mut terminal = ratatui::init();
-    terminal.clear()?;
-    let app_result = run(terminal);
-    ratatui::restore();
-    app_result
-    // println!(
-    //     "Currently available dice: {}",
-    //     state.print_dice().unwrap_or(String::from("None"))
-    // );
-    // let chosen_die = get_chosen_die(&mut state);
-    // println!("You selected: {}", chosen_die);
-    // println!("Throwing the die!");
+    let mut random = setup_random();
 
-    // let mut random = setup_random();
-    // let die_range = chosen_die.get_range();
-    // loop {
-    //     let random_number = random.rand_range(die_range.clone());
-    //     println!("You rolled a: {}", random_number);
-    //     if !roll_again() {
-    //         break;
-    //     }
-    // }
+    match cli_options {
+        cli::CliOptions::Exit => {
+            return Ok(());
+        }
+        cli::CliOptions::Text => {
+            text::run_text_mode(&mut state, &mut random);
+            return Ok(());
+        }
+        cli::CliOptions::TUI => {
+            let mut terminal = ratatui::init();
+            terminal.clear()?;
+            let app_result = run(terminal);
+            ratatui::restore();
+            return app_result;
+        }
+    }
 }
