@@ -19,6 +19,8 @@ use crate::{core::Die, State};
 struct App<'a> {
     state: State<'a>,
     current_die: Option<&'a Die<'a>>,
+    current_index: Option<usize>,
+    current_range: std::ops::Range<usize>,
     current_die_roll: Option<u32>,
     random: Rand32,
     exit: bool,
@@ -26,9 +28,11 @@ struct App<'a> {
 
 impl<'a> App<'a> {
     pub fn run(&mut self, terminal: &mut DefaultTerminal) -> io::Result<()> {
-        while !self.exit {
+        let mut exit = self.exit;
+        while !exit {
             terminal.draw(|frame| self.draw(frame))?;
             self.handle_events()?;
+            exit = self.exit;
         }
         Ok(())
     }
@@ -65,12 +69,17 @@ impl<'a> App<'a> {
 
     fn previous_die(&mut self) {}
 
-    fn next_die(&mut self) {}
+    fn next_die(&mut self) {
+        if self.current_die.is_none() && self.current_range.len() != 0 {
+            self.current_index = Some(0);
+            self.current_die = self.state.get_dice().get(0);
+        }
+    }
 
     fn roll_die(&mut self) {}
 }
 
-impl<'a> Widget for &App<'a> {
+impl<'a> Widget for &'a App<'a> {
     fn render(self, area: ratatui::prelude::Rect, buf: &mut ratatui::prelude::Buffer)
     where
         Self: Sized,
@@ -106,10 +115,13 @@ impl<'a> Widget for &App<'a> {
 }
 
 pub fn run_tui<'a>(state: State<'a>, random: Rand32) -> io::Result<()> {
+    let range = 0..(state.get_dice().len() - 1);
     let mut app = App {
         state,
         random,
         current_die: None,
+        current_index: None,
+        current_range: range,
         current_die_roll: None,
         exit: false,
     };
