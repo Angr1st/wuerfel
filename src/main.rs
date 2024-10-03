@@ -55,6 +55,6 @@ fn main() -> io::Result<()> {
             text::run_text_mode(&mut state, &mut random);
             return Ok(());
         }
-        cli::CliOptions::TUI => tui::run_tui(&mut state),
+        cli::CliOptions::TUI => tui::run_tui(state, random),
     }
 }

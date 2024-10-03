@@ -56,16 +56,19 @@ fn roll_again() -> bool {
     }
 }
 
-pub fn run_text_mode<'a>(state: &'a mut State<'a>, random: &mut oorandom::Rand32) {
-    println!(
-        "Currently available dice: {}",
-        state.print_dice().unwrap_or(String::from("None"))
-    );
+fn get_chosen_die_range<'a>(state: &'a mut State<'a>) -> std::ops::Range<u32> {
     let chosen_die = get_chosen_die(state);
     println!("You selected: {}", chosen_die);
     println!("Throwing the die!");
 
-    let die_range = chosen_die.get_range();
+    chosen_die.get_range()
+}
+
+pub fn run_text_mode<'a>(state: &'a mut State<'a>, random: &mut oorandom::Rand32) {
+    let available_dice = state.print_dice().unwrap_or(String::from("None"));
+    println!("Currently available dice: {}", available_dice);
+
+    let die_range = get_chosen_die_range(state);
     loop {
         let random_number = random.rand_range(die_range.clone());
         println!("You rolled a: {}", random_number);
