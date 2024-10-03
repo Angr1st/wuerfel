@@ -1,4 +1,4 @@
-use std::{io, str::FromStr};
+use std::io;
 
 use oorandom::Rand32;
 use ratatui::{
