@@ -24,7 +24,7 @@ impl<'a> State<'a> {
         Some(buffer)
     }
 
-    pub(crate) fn get_dice(&'a self) -> &[Die<'a>] {
+    pub(crate) fn get_dice(&'a self) -> &'a [Die<'a>] {
         &self.dice
     }
 }

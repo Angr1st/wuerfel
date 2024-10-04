@@ -27,7 +27,7 @@ struct App<'a> {
 }
 
 impl<'a> App<'a> {
-    pub fn run(&mut self, terminal: &mut DefaultTerminal) -> io::Result<()> {
+    pub fn run(&'a mut self, terminal: &mut DefaultTerminal) -> io::Result<()> {
         let mut exit = self.exit;
         while !exit {
             terminal.draw(|frame| self.draw(frame))?;
@@ -41,7 +41,7 @@ impl<'a> App<'a> {
         frame.render_widget(self, frame.area());
     }
 
-    fn handle_events(&mut self) -> io::Result<()> {
+    fn handle_events(&'a mut self) -> io::Result<()> {
         match event::read()? {
             // it's important to check that the event is a key press event as
             // crossterm also emits key release and repeat events on Windows.
@@ -53,7 +53,7 @@ impl<'a> App<'a> {
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key_event: KeyEvent) {
+    fn handle_key_event(&'a mut self, key_event: KeyEvent) {
         match key_event.code {
             KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => self.exit(),
             KeyCode::Left => self.previous_die(),
@@ -69,10 +69,23 @@ impl<'a> App<'a> {
 
     fn previous_die(&mut self) {}
 
-    fn next_die(&mut self) {
+    fn next_die(&'a mut self) {
+        if self.current_range.len() == 0 {
+            return;
+        }
         if self.current_die.is_none() && self.current_range.len() != 0 {
             self.current_index = Some(0);
-            self.current_die = self.state.get_dice().get(0);
+            let state = &self.state;
+            let dice = state.get_dice();
+            self.current_die = dice.get(0);
+        } else {
+            let max_index = self.current_range.end;
+            self.current_index =
+                self.current_index
+                    .map(|index| if index + 1 > max_index { 0 } else { index + 1 });
+            let state = &self.state;
+            let dice = state.get_dice();
+            self.current_die = dice.get(self.current_index.unwrap());
         }
     }
 
