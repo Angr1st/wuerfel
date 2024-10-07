@@ -4,7 +4,7 @@ This is a rust program for simulating rolling dice. Current iteration is just ru
 
 ## ToDos
 
-[x] Interactive Terminal
-[x] Add CLI args for switching between Terminal and TUI
-[x] TUI Support
-[ ] 3D Dice Support
+- [x] Interactive Terminal
+- [x] Add CLI args for switching between Terminal and TUI
+- [x] TUI Support
+- [ ] 3D Dice Support
