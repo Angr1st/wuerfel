@@ -1,4 +1,4 @@
-use core::{Die, State, Symbol};
+use core::{Die, Error, State, Symbol};
 use std::io;
 
 use getrandom::getrandom;
@@ -6,6 +6,7 @@ use oorandom::{self, Rand32};
 
 mod cli;
 mod core;
+mod gui;
 mod text;
 mod tui;
 
@@ -41,7 +42,7 @@ fn setup_random() -> Rand32 {
     Rand32::new(u64::from_be_bytes(bytes))
 }
 
-fn main() -> io::Result<()> {
+fn main() -> Result<(), Error> {
     let cli_options = cli::get_cli_options();
     let mut state = State::default();
     setup_default_dice(&mut state);
@@ -56,5 +57,6 @@ fn main() -> io::Result<()> {
             return Ok(());
         }
         cli::CliOptions::TUI => tui::run_tui(state, random),
+        cli::CliOptions::GUI => gui::run_gui(),
     }
 }

@@ -5,6 +5,7 @@ pub enum CliOptions {
     Exit,
     Text,
     TUI,
+    GUI,
 }
 
 pub fn get_cli_options() -> CliOptions {
@@ -23,7 +24,8 @@ pub fn get_cli_options() -> CliOptions {
                     r"Usage: wuerfel.exe [OPTIONS/ARGS]...
   -h, --help       display this help and exit
   -c, --text       use raw text output
-  -t, --tui        use tui outpus"
+  -t, --tui        use tui output
+  -g, --gui        use gui output"
                 );
 
                 return CliOptions::Exit;
@@ -35,6 +37,10 @@ pub fn get_cli_options() -> CliOptions {
 
             Arg::Short('t') | Arg::Long("tui") => {
                 return CliOptions::TUI;
+            }
+
+            Arg::Short('g') | Arg::Long("gui") => {
+                return CliOptions::GUI;
             }
             _ => {
                 return CliOptions::Exit;
