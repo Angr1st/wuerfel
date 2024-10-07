@@ -14,7 +14,7 @@ use ratatui::{
     DefaultTerminal, Frame,
 };
 
-use crate::{core::Die, State};
+use crate::State;
 
 struct App<'a> {
     state: State<'a>,
@@ -66,7 +66,22 @@ impl<'a> App<'a> {
         self.exit = true;
     }
 
-    fn previous_die(&mut self) {}
+    fn previous_die(&mut self) {
+        if self.current_range.len() == 0 {
+            return;
+        }
+        if self.current_index.is_none() && self.current_range.len() != 0 {
+            self.current_index = Some(self.current_range.end);
+        } else {
+            self.current_index = self.current_index.map(|index| {
+                if index == 0 {
+                    self.current_range.end
+                } else {
+                    index - 1
+                }
+            });
+        }
+    }
 
     fn next_die(&mut self) {
         if self.current_range.len() == 0 {
@@ -82,7 +97,14 @@ impl<'a> App<'a> {
         }
     }
 
-    fn roll_die(&mut self) {}
+    fn roll_die(&mut self) {
+        if let Some(index) = self.current_index {
+            if let Some(die) = self.state.get_dice().get(index) {
+                let die_range = die.get_range();
+                self.current_die_roll = Some(self.random.rand_range(die_range));
+            }
+        }
+    }
 }
 
 impl<'a> Widget for &'a App<'a> {
@@ -91,14 +113,27 @@ impl<'a> Widget for &'a App<'a> {
         Self: Sized,
     {
         let title = Title::from(" wuerfel App ".bold());
-        let instructions = Title::from(Line::from(vec![
-            " Previous ".into(),
-            "<Left>".blue().bold(),
-            " Next ".into(),
-            "<Right>".blue().bold(),
-            " Quit ".into(),
-            "<Q> ".blue().bold(),
-        ]));
+        let instructions = if self.current_index.is_some() {
+            Title::from(Line::from(vec![
+                " Previous ".into(),
+                "<Left>".blue().bold(),
+                " Roll die ".into(),
+                "<Enter>".blue().bold(),
+                " Next ".into(),
+                "<Right>".blue().bold(),
+                " Quit ".into(),
+                "<Q> ".blue().bold(),
+            ]))
+        } else {
+            Title::from(Line::from(vec![
+                " Previous ".into(),
+                "<Left>".blue().bold(),
+                " Next ".into(),
+                "<Right>".blue().bold(),
+                " Quit ".into(),
+                "<Q> ".blue().bold(),
+            ]))
+        };
         let block = Block::bordered()
             .title(title.alignment(Alignment::Center))
             .title(
@@ -108,12 +143,25 @@ impl<'a> Widget for &'a App<'a> {
             )
             .border_set(border::THICK);
 
-        let counter_text = Text::from(vec![Line::from(vec![
+        let mut dice_text = Text::from(vec![Line::from(vec![
             "Dice: ".into(),
             self.state.print_dice().unwrap_or("None".into()).yellow(),
         ])]);
-
-        Paragraph::new(counter_text)
+        if let Some(index) = self.current_index {
+            if let Some(die) = self.state.get_dice().get(index) {
+                dice_text.push_line(Line::from(vec![
+                    "Currently selected die: ".into(),
+                    die.get_name().into(),
+                ]));
+            }
+        }
+        if let Some(roll) = self.current_die_roll {
+            dice_text.push_line(Line::from(vec![
+                "Current roll: ".into(),
+                roll.to_string().into(),
+            ]));
+        }
+        Paragraph::new(dice_text)
             .centered()
             .block(block)
             .render(area, buf);
