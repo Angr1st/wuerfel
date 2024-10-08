@@ -180,3 +180,12 @@ impl From<eframe::Error> for Error {
         Self::Eframe(value)
     }
 }
+
+impl std::fmt::Debug for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Io(io) => write!(f, "{:?}", io),
+            Self::Eframe(eframe) => write!(f, "{:?}", eframe),
+        }
+    }
+}
