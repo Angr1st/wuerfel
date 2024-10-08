@@ -1,5 +1,4 @@
 use core::{Die, Error, State, Symbol};
-use std::io;
 
 use getrandom::getrandom;
 use oorandom::{self, Rand32};
@@ -57,6 +56,6 @@ fn main() -> Result<(), Error> {
             return Ok(());
         }
         cli::CliOptions::TUI => tui::run_tui(state, random),
-        cli::CliOptions::GUI => gui::run_gui(),
+        cli::CliOptions::GUI => gui::run_gui(state, random),
     }
 }
