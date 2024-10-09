@@ -1,4 +1,4 @@
-use eframe::egui::{self, Vec2};
+use eframe::egui::{self};
 use oorandom::Rand32;
 
 use crate::core::{Error, State};
