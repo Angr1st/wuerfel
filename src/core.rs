@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, io};
 
 pub(crate) struct State<'a> {
     dice: Vec<Die<'a>>,
@@ -161,5 +161,31 @@ impl<'a> Symbol<'a> {
 impl<'a> Display for Symbol<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "Symbol: {}, Number: {}", self.name, self.number)
+    }
+}
+
+pub(crate) enum Error {
+    Io(io::Error),
+    Eframe(eframe::Error),
+}
+
+impl From<io::Error> for Error {
+    fn from(value: io::Error) -> Self {
+        Self::Io(value)
+    }
+}
+
+impl From<eframe::Error> for Error {
+    fn from(value: eframe::Error) -> Self {
+        Self::Eframe(value)
+    }
+}
+
+impl std::fmt::Debug for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Io(io) => write!(f, "{:?}", io),
+            Self::Eframe(eframe) => write!(f, "{:?}", eframe),
+        }
     }
 }

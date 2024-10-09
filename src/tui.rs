@@ -14,7 +14,7 @@ use ratatui::{
     DefaultTerminal, Frame,
 };
 
-use crate::State;
+use crate::{core::Error, State};
 
 struct App<'a> {
     state: State<'a>,
@@ -26,7 +26,7 @@ struct App<'a> {
 }
 
 impl<'a> App<'a> {
-    pub fn run(&mut self, terminal: &mut DefaultTerminal) -> io::Result<()> {
+    pub fn run(&mut self, terminal: &mut DefaultTerminal) -> Result<(), Error> {
         let mut exit = self.exit;
         while !exit {
             terminal.draw(|frame| self.draw(frame))?;
@@ -168,7 +168,7 @@ impl<'a> Widget for &'a App<'a> {
     }
 }
 
-pub fn run_tui<'a>(state: State<'a>, random: Rand32) -> io::Result<()> {
+pub fn run_tui<'a>(state: State<'a>, random: Rand32) -> Result<(), Error> {
     let range = 0..(state.get_dice().len() - 1);
     let mut app = App {
         state,
