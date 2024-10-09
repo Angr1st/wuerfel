@@ -48,9 +48,10 @@ impl<'a> eframe::App for App<'a> {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.vertical_centered(|ui| {
                 ui.heading(APPHEADING);
+            });
+            ui.vertical(|ui| {
                 ui.label("Dice");
                 ui.horizontal(|hui| {
-                    hui.add_space(hui.available_width() / 4.0);
                     if hui.button("Previous").clicked() && has_dice {
                         if self.current_index.is_none() && self.current_range.len() != 0 {
                             self.current_index = Some(self.current_range.end);
@@ -98,20 +99,6 @@ impl<'a> eframe::App for App<'a> {
                     ui.label(format!("Current roll: {}", roll.to_string()));
                 }
             });
-            // ui.horizontal(|ui| {
-            //     let name_label = ui.label("Your name: ");
-            //     ui.text_edit_singleline(&mut self.name)
-            //         .labelled_by(name_label.id);
-            // });
-            // ui.add(egui::Slider::new(&mut self.age, 0..=120).text("age"));
-            // if ui.button("Increment").clicked() {
-            //     self.age += 1;
-            // }
-            // ui.label(format!("Hello '{}', age {}", self.name, self.age));
-
-            //ui.image(egui::include_image!(
-            //    "../../../crates/egui/assets/ferris.png"
-            //));
         });
     }
 }
