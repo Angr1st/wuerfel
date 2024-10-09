@@ -7,5 +7,5 @@ This is a rust program for simulating rolling dice. Current iteration is just ru
 - [x] Interactive Terminal
 - [x] Add CLI args for switching between Terminal and TUI
 - [x] TUI Support ([ratatui](https://ratatui.rs/))
-- [ ] GUI Support ([eframe](https://docs.rs/eframe/latest/eframe/))
+- [x] GUI Support ([eframe](https://docs.rs/eframe/latest/eframe/))
 - [ ] 3D Dice Support
