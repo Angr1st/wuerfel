@@ -7,6 +7,7 @@ mod cli;
 mod core;
 mod gui;
 mod text;
+mod three_dimensional;
 mod tui;
 
 fn configure_die(die: &mut Die<'_>, range: std::ops::Range<usize>) {
@@ -57,5 +58,6 @@ fn main() -> Result<(), Error> {
         }
         cli::CliOptions::TUI => tui::run_tui(state, random),
         cli::CliOptions::GUI => gui::run_gui(state, random),
+        cli::CliOptions::ThreeDimensional => three_dimensional::run_three_dimensional(),
     }
 }

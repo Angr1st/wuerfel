@@ -6,6 +6,7 @@ pub enum CliOptions {
     Text,
     TUI,
     GUI,
+    ThreeDimensional,
 }
 
 pub fn get_cli_options() -> CliOptions {
@@ -25,7 +26,8 @@ pub fn get_cli_options() -> CliOptions {
   -h, --help       display this help and exit
   -c, --text       use raw text output
   -t, --tui        use tui output
-  -g, --gui        use gui output"
+  -g, --gui        use gui output
+  -3, --3d         use 3d output"
                 );
 
                 return CliOptions::Exit;
@@ -41,6 +43,10 @@ pub fn get_cli_options() -> CliOptions {
 
             Arg::Short('g') | Arg::Long("gui") => {
                 return CliOptions::GUI;
+            }
+
+            Arg::Short('3') | Arg::Long("3d") => {
+                return CliOptions::ThreeDimensional;
             }
             _ => {
                 return CliOptions::Exit;
