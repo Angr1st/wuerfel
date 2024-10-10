@@ -9,3 +9,5 @@ getargs = "0.5.0"
 getrandom = { version = "0.2.15", default-features = false }
 oorandom = "11.1.4"
 ratatui = { version = "0.28.1", features = ["all-widgets"] }
+bevy = "0.14"
+bevy_rapier3d = { version = "0.27", features = ["simd-stable", "debug-render-3d"] }
