@@ -15,12 +15,29 @@ pub fn run_three_dimensional() -> Result<(), Error> {
     Ok(())
 }
 
-fn setup_graphics(mut commands: Commands) {
+const NUM_CUBES: u32 = 6;
+
+#[derive(Resource, Deref)]
+struct BoxMeshHandle(Handle<Mesh>);
+
+#[derive(Resource, Deref)]
+struct BoxMaterialHandle(Handle<StandardMaterial>);
+
+fn setup_graphics(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
     // Add a camera so we can see the debug-render.
     commands.spawn(Camera3dBundle {
         transform: Transform::from_xyz(-3.0, 3.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..Default::default()
     });
+    let box_mesh_handle = meshes.add(Cuboid::new(0.25, 0.25, 0.25));
+    commands.insert_resource(BoxMeshHandle(box_mesh_handle));
+
+    let box_material_handle = materials.add(Color::srgb(1.0, 0.2, 0.3));
+    commands.insert_resource(BoxMaterialHandle(box_material_handle));
 }
 
 fn setup_physics(mut commands: Commands) {
