@@ -14,20 +14,6 @@ use bevy::{
 };
 
 pub fn run_three_dimensional() -> Result<(), Error> {
-    // App::new()
-    //     .add_plugins(DefaultPlugins)
-    //     .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
-    //     .add_plugins(RapierDebugRenderPlugin::default())
-    //     .add_systems(Startup, setup_graphics)
-    //     .add_systems(Startup, setup_physics)
-    //     .add_systems(Update, print_ball_altitude)
-    //     .run();
-    // App::new()
-    //     .add_plugins(DefaultPlugins)
-    //     .add_systems(Startup, (setup_env, add_assets, spawn_tasks))
-    //     .add_systems(Update, handle_tasks)
-    //     .run();
-
     App::new()
         .add_plugins((
             DefaultPlugins.set(ImagePlugin::default_nearest()),
@@ -36,7 +22,7 @@ pub fn run_three_dimensional() -> Result<(), Error> {
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_systems(Startup, setup)
-        .add_systems(Update, (rotate, toggle_wireframe))
+        .add_systems(Update, (toggle_jump, toggle_wireframe))
         .run();
     Ok(())
 }
@@ -63,15 +49,15 @@ fn setup(
             PbrBundle {
                 mesh: shape,
                 material: debug_material.clone(),
-                transform: Transform::from_xyz(0.0, 7.0, 0.0)
-                    .with_rotation(Quat::from_rotation_x(PI)),
+                transform: Transform::from_xyz(0.0, 7.0, 0.0),
                 ..default()
             },
             Shape,
         ))
         .insert(RigidBody::Dynamic)
         .insert(Collider::cuboid(0.5, 0.5, 0.5))
-        .insert(Restitution::coefficient(0.7));
+        .insert(Restitution::coefficient(0.9))
+        .insert(ColliderMassProperties::Mass(10.0));
 
     commands.spawn(PointLightBundle {
         point_light: PointLight {
@@ -116,12 +102,6 @@ fn setup(
     );
 }
 
-fn rotate(mut query: Query<&mut Transform, With<Shape>>, time: Res<Time>) {
-    // for mut transform in &mut query {
-    //     transform.rotate_z(time.delta_seconds() / 2.);
-    // }
-}
-
 /// Creates a colorful test pattern
 fn uv_debug_texture() -> Image {
     const TEXTURE_SIZE: usize = 8;
@@ -157,5 +137,15 @@ fn toggle_wireframe(
 ) {
     if keyboard.just_pressed(KeyCode::Space) {
         wireframe_config.global = !wireframe_config.global;
+    }
+}
+
+fn toggle_jump(mut query: Query<&mut ExternalImpulse>, keyboard: Res<ButtonInput<KeyCode>>) {
+    if keyboard.just_pressed(KeyCode::Space) {
+        for mut ext_impulse in &mut query {
+            dbg!("Adding impulse");
+            ext_impulse.impulse = Vec3::new(100.0, 200.0, 300.0);
+            ext_impulse.torque_impulse = Vec3::new(0.4, 0.5, 0.6);
+        }
     }
 }
