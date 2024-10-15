@@ -34,58 +34,16 @@ pub fn run_three_dimensional() -> Result<(), Error> {
             WireframePlugin,
         ))
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugins(RapierDebugRenderPlugin::default())
         .add_systems(Startup, setup)
-        .add_systems(Startup, setup_physics)
         .add_systems(Update, (rotate, toggle_wireframe))
         .run();
     Ok(())
 }
 
-// fn setup_graphics(
-//     mut commands: Commands,
-//     mut meshes: ResMut<Assets<Mesh>>,
-//     mut materials: ResMut<Assets<StandardMaterial>>,
-// ) {
-//     // Add a camera so we can see the debug-render.
-//     commands.spawn(Camera3dBundle {
-//         transform: Transform::from_xyz(-3.0, 3.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
-//         ..Default::default()
-//     });
-//     let box_mesh_handle = meshes.add(Cuboid::new(0.25, 0.25, 0.25));
-//     commands.insert_resource(BoxMeshHandle(box_mesh_handle));
-
-//     let box_material_handle = materials.add(Color::srgb(1.0, 0.2, 0.3));
-//     commands.insert_resource(BoxMaterialHandle(box_material_handle));
-// }
-
-fn setup_physics(mut commands: Commands) {
-    /* Create the ground. */
-    commands
-        .spawn(Collider::cuboid(100.0, 0.1, 100.0))
-        .insert(TransformBundle::from(Transform::from_xyz(0.0, -2.0, 0.0)));
-
-    /* Create the bouncing ball. */
-    commands
-        .spawn(RigidBody::Dynamic)
-        .insert(Collider::cuboid(0.5, 0.5, 0.5))
-        .insert(Restitution::coefficient(0.7))
-        .insert(TransformBundle::from(Transform::from_xyz(0.0, 4.0, 0.0)));
-}
-
-// fn print_ball_altitude(mut positions: Query<&mut Transform, With<RigidBody>>) {
-//     for mut transform in positions.iter_mut() {
-//         dbg!(transform.rotation.to_axis_angle());
-//         transform.rotation = Quat::from_rotation_z(270_f32.to_radians());
-//         //println!("Ball altitude: {}", transform.translation.y);
-//     }
-// }
-
 /// A marker component for our shapes so we can query them separately from the ground plane
 #[derive(Component)]
 struct Shape;
-
-/* const SHAPES_X_EXTENT: f32 = -14.0;
-const Z_EXTENT: f32 = 5.0; */
 
 fn setup(
     mut commands: Commands,
@@ -100,15 +58,20 @@ fn setup(
 
     let shape = meshes.add(Cuboid::default());
 
-    commands.spawn((
-        PbrBundle {
-            mesh: shape,
-            material: debug_material.clone(),
-            transform: Transform::from_xyz(0.0, 2.0, 0.0).with_rotation(Quat::from_rotation_x(PI)),
-            ..default()
-        },
-        Shape,
-    ));
+    commands
+        .spawn((
+            PbrBundle {
+                mesh: shape,
+                material: debug_material.clone(),
+                transform: Transform::from_xyz(0.0, 7.0, 0.0)
+                    .with_rotation(Quat::from_rotation_x(PI)),
+                ..default()
+            },
+            Shape,
+        ))
+        .insert(RigidBody::Dynamic)
+        .insert(Collider::cuboid(0.5, 0.5, 0.5))
+        .insert(Restitution::coefficient(0.7));
 
     commands.spawn(PointLightBundle {
         point_light: PointLight {
@@ -123,11 +86,19 @@ fn setup(
     });
 
     // ground plane
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(Plane3d::default().mesh().size(50.0, 50.0).subdivisions(10)),
-        material: materials.add(Color::from(SILVER)),
-        ..default()
-    });
+    commands
+        .spawn(PbrBundle {
+            mesh: meshes.add(
+                Plane3d::default()
+                    .mesh()
+                    .size(100.0, 100.0)
+                    .subdivisions(10),
+            ),
+            material: materials.add(Color::from(SILVER)),
+            ..default()
+        })
+        .insert(Collider::cuboid(100.0, 0.0, 100.0))
+        .insert(TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)));
 
     commands.spawn(Camera3dBundle {
         transform: Transform::from_xyz(0.0, 7., 14.0).looking_at(Vec3::new(0., 1., 0.), Vec3::Y),
@@ -146,9 +117,9 @@ fn setup(
 }
 
 fn rotate(mut query: Query<&mut Transform, With<Shape>>, time: Res<Time>) {
-    for mut transform in &mut query {
-        transform.rotate_y(time.delta_seconds() / 2.);
-    }
+    // for mut transform in &mut query {
+    //     transform.rotate_z(time.delta_seconds() / 2.);
+    // }
 }
 
 /// Creates a colorful test pattern
