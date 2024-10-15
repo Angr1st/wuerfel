@@ -1,4 +1,4 @@
-//use bevy_rapier3d::prelude::*;
+use bevy_rapier3d::prelude::*;
 
 use std::f32::consts::PI;
 
@@ -33,7 +33,9 @@ pub fn run_three_dimensional() -> Result<(), Error> {
             DefaultPlugins.set(ImagePlugin::default_nearest()),
             WireframePlugin,
         ))
+        .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_systems(Startup, setup)
+        .add_systems(Startup, setup_physics)
         .add_systems(Update, (rotate, toggle_wireframe))
         .run();
     Ok(())
@@ -56,19 +58,19 @@ pub fn run_three_dimensional() -> Result<(), Error> {
 //     commands.insert_resource(BoxMaterialHandle(box_material_handle));
 // }
 
-// fn setup_physics(mut commands: Commands) {
-//     /* Create the ground. */
-//     commands
-//         .spawn(Collider::cuboid(100.0, 0.1, 100.0))
-//         .insert(TransformBundle::from(Transform::from_xyz(0.0, -2.0, 0.0)));
+fn setup_physics(mut commands: Commands) {
+    /* Create the ground. */
+    commands
+        .spawn(Collider::cuboid(100.0, 0.1, 100.0))
+        .insert(TransformBundle::from(Transform::from_xyz(0.0, -2.0, 0.0)));
 
-//     /* Create the bouncing ball. */
-//     commands
-//         .spawn(RigidBody::Dynamic)
-//         .insert(Collider::cuboid(0.5, 0.5, 0.5))
-//         .insert(Restitution::coefficient(0.7))
-//         .insert(TransformBundle::from(Transform::from_xyz(0.0, 4.0, 0.0)));
-// }
+    /* Create the bouncing ball. */
+    commands
+        .spawn(RigidBody::Dynamic)
+        .insert(Collider::cuboid(0.5, 0.5, 0.5))
+        .insert(Restitution::coefficient(0.7))
+        .insert(TransformBundle::from(Transform::from_xyz(0.0, 4.0, 0.0)));
+}
 
 // fn print_ball_altitude(mut positions: Query<&mut Transform, With<RigidBody>>) {
 //     for mut transform in positions.iter_mut() {
@@ -82,9 +84,8 @@ pub fn run_three_dimensional() -> Result<(), Error> {
 #[derive(Component)]
 struct Shape;
 
-const SHAPES_X_EXTENT: f32 = 14.0;
-const EXTRUSION_X_EXTENT: f32 = 16.0;
-const Z_EXTENT: f32 = 5.0;
+/* const SHAPES_X_EXTENT: f32 = -14.0;
+const Z_EXTENT: f32 = 5.0; */
 
 fn setup(
     mut commands: Commands,
@@ -97,66 +98,17 @@ fn setup(
         ..default()
     });
 
-    let shapes = [
-        meshes.add(Cuboid::default()),
-        meshes.add(Tetrahedron::default()),
-        meshes.add(Capsule3d::default()),
-        meshes.add(Torus::default()),
-        meshes.add(Cylinder::default()),
-        meshes.add(Cone::default()),
-        meshes.add(ConicalFrustum::default()),
-        meshes.add(Sphere::default().mesh().ico(5).unwrap()),
-        meshes.add(Sphere::default().mesh().uv(32, 18)),
-    ];
+    let shape = meshes.add(Cuboid::default());
 
-    let extrusions = [
-        meshes.add(Extrusion::new(Rectangle::default(), 1.)),
-        meshes.add(Extrusion::new(Capsule2d::default(), 1.)),
-        meshes.add(Extrusion::new(Annulus::default(), 1.)),
-        meshes.add(Extrusion::new(Circle::default(), 1.)),
-        meshes.add(Extrusion::new(Ellipse::default(), 1.)),
-        meshes.add(Extrusion::new(RegularPolygon::default(), 1.)),
-        meshes.add(Extrusion::new(Triangle2d::default(), 1.)),
-    ];
-
-    let num_shapes = shapes.len();
-
-    for (i, shape) in shapes.into_iter().enumerate() {
-        commands.spawn((
-            PbrBundle {
-                mesh: shape,
-                material: debug_material.clone(),
-                transform: Transform::from_xyz(
-                    -SHAPES_X_EXTENT / 2. + i as f32 / (num_shapes - 1) as f32 * SHAPES_X_EXTENT,
-                    2.0,
-                    Z_EXTENT / 2.,
-                )
-                .with_rotation(Quat::from_rotation_x(-PI / 4.)),
-                ..default()
-            },
-            Shape,
-        ));
-    }
-
-    let num_extrusions = extrusions.len();
-
-    for (i, shape) in extrusions.into_iter().enumerate() {
-        commands.spawn((
-            PbrBundle {
-                mesh: shape,
-                material: debug_material.clone(),
-                transform: Transform::from_xyz(
-                    -EXTRUSION_X_EXTENT / 2.
-                        + i as f32 / (num_extrusions - 1) as f32 * EXTRUSION_X_EXTENT,
-                    2.0,
-                    -Z_EXTENT / 2.,
-                )
-                .with_rotation(Quat::from_rotation_x(-PI / 4.)),
-                ..default()
-            },
-            Shape,
-        ));
-    }
+    commands.spawn((
+        PbrBundle {
+            mesh: shape,
+            material: debug_material.clone(),
+            transform: Transform::from_xyz(0.0, 2.0, 0.0).with_rotation(Quat::from_rotation_x(PI)),
+            ..default()
+        },
+        Shape,
+    ));
 
     commands.spawn(PointLightBundle {
         point_light: PointLight {
