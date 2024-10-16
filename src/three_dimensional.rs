@@ -12,7 +12,17 @@ use bevy::{
 
 pub fn run_three_dimensional() -> Result<(), Error> {
     App::new()
-        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+        .add_plugins(
+            DefaultPlugins
+                .set(ImagePlugin::default_nearest())
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: "Wuerfel".to_string(),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                }),
+        )
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_systems(Startup, setup)
@@ -83,7 +93,7 @@ fn setup(
         .insert(TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)));
 
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 7., 14.0).looking_at(Vec3::new(0., 1., 0.), Vec3::Y),
+        transform: Transform::from_xyz(0.0, 10.0, 0.0).looking_at(Vec3::new(0., 1., 0.), Vec3::Y),
         ..default()
     });
 
@@ -133,7 +143,6 @@ fn toggle_jump(
 ) {
     if keyboard.just_pressed(KeyCode::Space) {
         for mut ext_impulse in &mut query {
-            dbg!("Adding impulse");
             ext_impulse.impulse = Vec3::new(0.0, 90.0, 0.0);
             ext_impulse.torque_impulse = Vec3::new(0.0, 0.0, 0.0);
         }
