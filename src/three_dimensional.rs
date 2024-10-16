@@ -1,9 +1,6 @@
 use bevy_rapier3d::prelude::*;
 
-use std::f32::consts::PI;
-
 use crate::core::Error;
-use bevy::pbr::wireframe::{WireframeConfig, WireframePlugin};
 use bevy::{
     color::palettes::basic::SILVER,
     prelude::*,
@@ -15,21 +12,18 @@ use bevy::{
 
 pub fn run_three_dimensional() -> Result<(), Error> {
     App::new()
-        .add_plugins((
-            DefaultPlugins.set(ImagePlugin::default_nearest()),
-            WireframePlugin,
-        ))
+        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_systems(Startup, setup)
-        .add_systems(Update, (toggle_jump, toggle_wireframe))
+        .add_systems(Update, toggle_jump)
         .run();
     Ok(())
 }
 
-/// A marker component for our shapes so we can query them separately from the ground plane
+/// A marker component for our wuerfel  so we can query them separately from the ground plane
 #[derive(Component)]
-struct Shape;
+struct Wuerfel;
 
 fn setup(
     mut commands: Commands,
@@ -52,11 +46,13 @@ fn setup(
                 transform: Transform::from_xyz(0.0, 7.0, 0.0),
                 ..default()
             },
-            Shape,
+            Wuerfel,
         ))
         .insert(RigidBody::Dynamic)
         .insert(Collider::cuboid(0.5, 0.5, 0.5))
         .insert(Restitution::coefficient(0.9))
+        .insert(ExternalForce::default())
+        .insert(ExternalImpulse::default())
         .insert(ColliderMassProperties::Mass(10.0));
 
     commands.spawn(PointLightBundle {
@@ -92,7 +88,7 @@ fn setup(
     });
 
     commands.spawn(
-        TextBundle::from_section("Press space to toggle wireframes", TextStyle::default())
+        TextBundle::from_section("Press space to jump the wuerfel", TextStyle::default())
             .with_style(Style {
                 position_type: PositionType::Absolute,
                 top: Val::Px(12.0),
@@ -131,21 +127,15 @@ fn uv_debug_texture() -> Image {
     )
 }
 
-fn toggle_wireframe(
-    mut wireframe_config: ResMut<WireframeConfig>,
+fn toggle_jump(
+    mut query: Query<&mut ExternalImpulse, With<Wuerfel>>,
     keyboard: Res<ButtonInput<KeyCode>>,
 ) {
     if keyboard.just_pressed(KeyCode::Space) {
-        wireframe_config.global = !wireframe_config.global;
-    }
-}
-
-fn toggle_jump(mut query: Query<&mut ExternalImpulse>, keyboard: Res<ButtonInput<KeyCode>>) {
-    if keyboard.just_pressed(KeyCode::Space) {
         for mut ext_impulse in &mut query {
             dbg!("Adding impulse");
-            ext_impulse.impulse = Vec3::new(100.0, 200.0, 300.0);
-            ext_impulse.torque_impulse = Vec3::new(0.4, 0.5, 0.6);
+            ext_impulse.impulse = Vec3::new(0.0, 90.0, 0.0);
+            ext_impulse.torque_impulse = Vec3::new(0.0, 0.0, 0.0);
         }
     }
 }
