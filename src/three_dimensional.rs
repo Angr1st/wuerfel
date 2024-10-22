@@ -1,3 +1,4 @@
+use bevy_embedded_assets::EmbeddedAssetPlugin;
 use bevy_rapier3d::prelude::*;
 
 use crate::core::Error;
@@ -12,7 +13,8 @@ use bevy::{
 
 pub fn run_three_dimensional() -> Result<(), Error> {
     App::new()
-        .add_plugins(
+        .add_plugins((
+            EmbeddedAssetPlugin::default(),
             DefaultPlugins
                 .set(ImagePlugin::default_nearest())
                 .set(WindowPlugin {
@@ -22,7 +24,7 @@ pub fn run_three_dimensional() -> Result<(), Error> {
                     }),
                     ..Default::default()
                 }),
-        )
+        ))
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_systems(Startup, setup)
@@ -37,13 +39,15 @@ struct Wuerfel;
 
 fn setup(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut images: ResMut<Assets<Image>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    let texture_handle = asset_server.load("wuerfel.png");
+
     let debug_material = materials.add(StandardMaterial {
-        base_color_texture: Some(images.add(uv_debug_texture())),
-        ..default()
+        base_color_texture: texture_handle.into(),
+        ..Default::default()
     });
 
     let shape = meshes.add(Cuboid::default());
@@ -106,35 +110,6 @@ fn setup(
                 ..default()
             }),
     );
-}
-
-/// Creates a colorful test pattern
-fn uv_debug_texture() -> Image {
-    const TEXTURE_SIZE: usize = 8;
-
-    let mut palette: [u8; 32] = [
-        255, 102, 159, 255, 255, 159, 102, 255, 236, 255, 102, 255, 121, 255, 102, 255, 102, 255,
-        198, 255, 102, 198, 255, 255, 121, 102, 255, 255, 236, 102, 255, 255,
-    ];
-
-    let mut texture_data = [0; TEXTURE_SIZE * TEXTURE_SIZE * 4];
-    for y in 0..TEXTURE_SIZE {
-        let offset = TEXTURE_SIZE * y * 4;
-        texture_data[offset..(offset + TEXTURE_SIZE * 4)].copy_from_slice(&palette);
-        palette.rotate_right(4);
-    }
-
-    Image::new_fill(
-        Extent3d {
-            width: TEXTURE_SIZE as u32,
-            height: TEXTURE_SIZE as u32,
-            depth_or_array_layers: 1,
-        },
-        TextureDimension::D2,
-        &texture_data,
-        TextureFormat::Rgba8UnormSrgb,
-        RenderAssetUsages::RENDER_WORLD,
-    )
 }
 
 fn toggle_jump(
