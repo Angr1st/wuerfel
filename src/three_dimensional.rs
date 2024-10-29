@@ -61,18 +61,6 @@ fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let scene_handle = asset_server.load("wuerfel.glb#Scene0");
-    // let mesh_handle = asset_server.load("wuerfel.glb#Mesh0/Primitive0");
-    // let texture_handle = asset_server.load("wuerfel.glb#Material0");
-
-    // let debug_material = materials.add(texture_handle);
-    //     StandardMaterial {
-    //     base_color_texture: texture_handle.into(),
-
-    //     ..Default::default()
-    // });
-
-    // let shape = meshes.add(mesh_handle);
-
     commands
         .spawn((
             SceneBundle {
@@ -80,12 +68,6 @@ fn setup(
                 transform: Transform::from_xyz(0.0, 5.0, 0.0),
                 ..Default::default()
             },
-            // PbrBundle {
-            //     mesh: shape,
-            //     material: debug_material.clone(),
-            //     transform: Transform::from_xyz(0.0, 7.0, 0.0),
-            //     ..default()
-            // },
             Wuerfel,
         ))
         .insert(RigidBody::Dynamic)
